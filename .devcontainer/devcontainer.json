@@ -4,14 +4,15 @@
 	"service": "app",
 	"workspaceFolder": "/workspace",
 
-	// Instala o Node.js
+	// instalação do node.js
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": "18"
-		}
+		},
+		"ghcr.io/devcontainers/features/git-lfs:1": {} 
 	},
 
-	// Instala extensões úteis do VS Code
+	// algumas extensoes do vs code
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -24,6 +25,6 @@
 		}
 	},
 
-	// Instala as ferramentas (NestJS e React)
+	//instala react e nest
 	"postCreateCommand": "npm install -g @nestjs/cli create-react-app"
 }
