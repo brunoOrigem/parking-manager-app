@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # Container principal com seu código
+  app:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu-22.04
+    command: sleep infinity
+    volumes:
+      - ..:/workspace:cached
+
+  # Container do banco de dados
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres # Senha para desenvolvimento
+      - POSTGRES_DB=parking_db # Nome do banco
+    ports:
+      - '5432:5432'
+
+volumes:
+  postgres-data:

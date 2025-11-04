@@ -1,0 +1,29 @@
+{
+	"name": "Estacionamento (NestJS + React + Postgres)",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspace",
+
+	// Instala o Node.js
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "18"
+		}
+	},
+
+	// Instala extensões úteis do VS Code
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode",
+				"Prisma.prisma",
+				"firsttris.vscode-jest-runner",
+				"dsznajder.es7-react-js-snippets"
+			]
+		}
+	},
+
+	// Instala as ferramentas (NestJS e React)
+	"postCreateCommand": "npm install -g @nestjs/cli create-react-app"
+}
