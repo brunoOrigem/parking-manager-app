@@ -32,7 +32,7 @@ export class TicketService {
     const diferencaMs = agora.getTime() - ticketEncontrado.dataEntrada.getTime();
     const minutosPermanencia = diferencaMs / (1000 * 60);
 
-    // Regra: 15 Minutos de Cortesia
+    // Regra: 15 Minutos de Cortesia [cite: 18]
     if (minutosPermanencia <= 15) {
         return {
             liberado: true,
@@ -51,7 +51,7 @@ export class TicketService {
     return { liberado: true, mensagem: "Saída Liberada. Volte sempre!" };
   }
 
-  // --- 3. Cálculo de Valor (Caixa de Pagamento) ---
+  // --- 3. Cálculo de Valor (Caixa de Pagamento - Consulta) ---
   async calcularValor(ticketId: string) {
     // SIMULAÇÃO DE DADOS PARA TESTE
     // Cenário 1: "ticket-vencido" -> Simula entrada há 2h e 10min (130 min)
@@ -80,7 +80,7 @@ export class TicketService {
 
     let valor = 0;
 
-    // --- REGRAS DE NEGÓCIO ---
+    // --- REGRAS DE NEGÓCIO [cite: 16-20] ---
 
     // Regra 1: Cortesia (Até 15 min)
     if (minutosTotais <= 15) {
@@ -107,6 +107,33 @@ export class TicketService {
       tempoPermanenciaMinutos: minutosTotais,
       tempoFormatado: `${Math.floor(minutosTotais / 60)}h ${minutosTotais % 60}m`,
       valorAPagar: valor
+    };
+  }
+
+  // --- 4. Confirmação de Pagamento (Caixa - Efetivação) ---
+  async realizarPagamento(ticketId: string) {
+    // 1. Primeiro, calculamos quanto deve ser pago (Reutilizando a regra acima)
+    const infoCalculo = await this.calcularValor(ticketId);
+
+    // 2. Criamos o objeto de pagamento (Simulação)
+    const pagamentoConfirmado = {
+        id: randomUUID(), // Gera ID do pagamento
+        ticketId: ticketId,
+        valorPago: infoCalculo.valorAPagar,
+        dataPagamento: new Date(),
+    };
+
+    /* AQUI ENTRARIA O BANCO DE DADOS (REPOSITORY):
+       await repository.pagamento.create({ data: pagamentoConfirmado });
+       await repository.ticket.update({ where: { id: ticketId }, data: { dataSaida: new Date() } });
+    */
+
+    console.log(`Pagamento registrado: R$ ${pagamentoConfirmado.valorPago} para o ticket ${ticketId}`);
+
+    return {
+        sucesso: true,
+        mensagem: "Pagamento confirmado. Ticket liberado para saída.",
+        comprovante: pagamentoConfirmado
     };
   }
 }
