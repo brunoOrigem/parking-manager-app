@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 export class TicketService {
   
-  // ... (Mantenha o método emitirTicket igualzinho estava) ...
+  // --- 1. Emissão de Ticket (Cancela de Entrada) ---
   async emitirTicket(placa: string) {
     const novoTicket = {
       id: randomUUID(),
@@ -14,31 +14,25 @@ export class TicketService {
     return novoTicket;
   }
 
-  // --- NOVO MÉTODO ---
-  /**
-   * Caso de Uso: Validação de Ticket na Saída [cite: 12]
-   */
+  // --- 2. Validação (Cancela de Saída) ---
   async validarSaida(ticketId: string) {
-    // 1. Busca o ticket no banco (SIMULAÇÃO)
-    // Se o ID for "ticket-vencido", simulamos que entrou 2 horas atrás.
-    // Caso contrário, simulamos que entrou agora.
+    // Simulação: Se for 'ticket-vencido', finge que entrou 2h atrás
     const dataSimulada = ticketId === 'ticket-vencido' 
-      ? new Date(Date.now() - 1000 * 60 * 120) // 2 horas atrás
+      ? new Date(Date.now() - 1000 * 60 * 120) // 120 min atrás
       : new Date(); // Agora
 
     const ticketEncontrado = {
       id: ticketId,
       placa: 'SIMULACAO',
       dataEntrada: dataSimulada,
-      pagamento: null // Ainda não pago
+      pagamento: null
     };
 
-    // 2. Calcula o tempo de permanência (em milissegundos)
     const agora = new Date();
     const diferencaMs = agora.getTime() - ticketEncontrado.dataEntrada.getTime();
     const minutosPermanencia = diferencaMs / (1000 * 60);
 
-    // 3. Regra de Negócio: 15 Minutos de Cortesia 
+    // Regra: 15 Minutos de Cortesia
     if (minutosPermanencia <= 15) {
         return {
             liberado: true,
@@ -46,7 +40,7 @@ export class TicketService {
         };
     }
 
-    // 4. Se passou de 15 min, verifica pagamento
+    // Se passou de 15 min, exige pagamento
     if (ticketEncontrado.pagamento === null) {
         return {
             liberado: false,
@@ -55,6 +49,65 @@ export class TicketService {
     }
 
     return { liberado: true, mensagem: "Saída Liberada. Volte sempre!" };
+  }
+
+  // --- 3. Cálculo de Valor (Caixa de Pagamento) ---
+  async calcularValor(ticketId: string) {
+    // SIMULAÇÃO DE DADOS PARA TESTE
+    // Cenário 1: "ticket-vencido" -> Simula entrada há 2h e 10min (130 min)
+    // Cenário 2: Qualquer outro ID -> Simula entrada "agora" (0 min)
+    const dataSimulada = ticketId === 'ticket-vencido' 
+      ? new Date(Date.now() - (1000 * 60 * 130)) 
+      : new Date(); 
+
+    const ticketEncontrado = {
+      id: ticketId,
+      placa: 'SIMULACAO',
+      dataEntrada: dataSimulada,
+      pagamento: null 
+    };
+
+    // Cálculos de tempo
+    const agora = new Date();
+    const diferencaMs = agora.getTime() - ticketEncontrado.dataEntrada.getTime();
+    
+    // Converte para minutos totais
+    const minutosTotais = Math.floor(diferencaMs / (1000 * 60));
+    
+    // Converte para horas (Arredondando para cima para cobrar fração como hora cheia)
+    // Ex: 61 minutos vira 2 horas
+    const horasTotais = Math.ceil(minutosTotais / 60); 
+
+    let valor = 0;
+
+    // --- REGRAS DE NEGÓCIO ---
+
+    // Regra 1: Cortesia (Até 15 min)
+    if (minutosTotais <= 15) {
+      valor = 0.00;
+    } 
+    // Regra 2: Até 1 hora (Valor Fixo R$ 5,00)
+    else if (minutosTotais <= 60) {
+      valor = 5.00;
+    } 
+    // Regra 3: Acima de 1 hora (R$ 5,00 + R$ 4,50 por hora extra)
+    else {
+      // Valor da primeira hora fixa
+      valor = 5.00;
+      
+      // Calcula quantas horas extras existem (Total - a primeira)
+      const horasExtras = horasTotais - 1;
+      
+      // Soma o valor das horas extras
+      valor += (horasExtras * 4.50);
+    }
+
+    return {
+      ticketId: ticketId,
+      tempoPermanenciaMinutos: minutosTotais,
+      tempoFormatado: `${Math.floor(minutosTotais / 60)}h ${minutosTotais % 60}m`,
+      valorAPagar: valor
+    };
   }
 }
 
