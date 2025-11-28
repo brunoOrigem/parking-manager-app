@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-// O '@' deve funcionar já que consertamos o tsconfig.
-// Se der erro, use: ../../../../../../services/ticket.service
 import { ticketService } from '@/services/ticket.service';
 
 export async function POST(request: Request) {
@@ -8,7 +6,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { ticketId } = body;
 
-    // Validação
+    // validação
     if (!ticketId) {
       return NextResponse.json(
         { error: 'Ticket ID é obrigatório para realizar o pagamento.' },
@@ -16,10 +14,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Chama o Service para efetivar o pagamento
+    // chama o service pra fazer o pagamento
     const resultado = await ticketService.realizarPagamento(ticketId);
 
-    // Retorna 200 OK com o comprovante
+    // retorna 200 c o comprovante de pagamento
     return NextResponse.json(resultado, { status: 200 });
 
   } catch (error) {

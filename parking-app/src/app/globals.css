@@ -1,8 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Opcional: Estilo base para o fundo não ficar branco puro */
+/* aqui eh contigo otavio, sei nadaaaa disso kkkkkkkkkkkkkkkkk
+so coloquei essa corzinha pra n ficar branco na hora do teste q fiz aq */
 body {
-  background-color: #f3f4f6;
+  background-color: #718dc6;
 }

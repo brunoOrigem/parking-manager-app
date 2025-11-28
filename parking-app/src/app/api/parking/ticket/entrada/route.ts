@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
-// Agora o '@' funciona perfeitamente graças ao tsconfig!
 import { ticketService } from '@/services/ticket.service';
 
-// --- Controller (MVC) ---
+// CONTROLLER MVC
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { placa } = body;
 
-    // Validação
+    // validação da placa, caso nenhuma placa seja mencionada
     if (!placa || typeof placa !== 'string') {
       return NextResponse.json(
         { error: 'A placa é obrigatória.' },
@@ -16,10 +15,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Chama o Service
+    // chama o service pra emitir o ticket
     const ticket = await ticketService.emitirTicket(placa);
 
-    // Retorna 201 Created
+    //204 created -- placa cadastrada no estacionamento
     return NextResponse.json(ticket, { status: 201 });
 
   } catch (error) {
