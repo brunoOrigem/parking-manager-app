@@ -1,29 +1,23 @@
-// parking-app/prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// Mantemos o SQLite do seu colega (mais fácil de rodar)
+
 datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
 }
 
 model Ticket {
-  // Alterado para String/UUID para bater com seu código atual
   id          String    @id @default(uuid())
   placa       String
   
-  // Nomes ajustados para bater com seu TicketService
   dataEntrada DateTime  @default(now())
   dataSaida   DateTime?
   
-  // Campos extras úteis que seu colega criou
   pago        Boolean   @default(false)
   valorPago   Float?
-  
-  // Relacionamento
+
   pagamento   Pagamento?
 }
 
