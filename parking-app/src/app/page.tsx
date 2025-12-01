@@ -7,11 +7,11 @@ export default function Home() {
     <main className="min-h-screen bg-[#f5f7fb]">
       <section className="max-w-6xl mx-auto px-4 pt-10 pb-6 text-center">
         <h1 className="text-3xl md:text-[2.4rem] font-semibold text-[#15407b] tracking-tight">
-          Sistema de Estacionamento
+          Estacionamento CodePark
         </h1>
 
         <p className="mt-3 text-sm md:text-base text-[#555]">
-          Trabalho Final · Programação de Software Aplicado
+          Seja Bem-Vindo!
         </p>
 
         <p className="mt-4 text-base md:text-lg text-[#555]">
@@ -68,7 +68,7 @@ export default function Home() {
       </section>
 
       <footer className="py-8 text-center text-slate-500 text-xs">
-        Sistema de Estacionamento v1.0
+        Sistema CodePark
       </footer>
     </main>
   );

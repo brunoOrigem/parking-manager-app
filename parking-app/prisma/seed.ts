@@ -17,6 +17,9 @@ async function main() {
   const doisDiasAtras = new Date(agora)
   doisDiasAtras.setDate(doisDiasAtras.getDate() - 2)
 
+  const treDiasAtras = new Date(agora)
+  treDiasAtras.setDate(treDiasAtras.getDate() - 3)
+
   // --- CENÁRIO 1: pagou ontem - historico
   await prisma.ticket.create({
     data: {
@@ -34,10 +37,26 @@ async function main() {
     }
   })
 
+  await prisma.ticket.create({
+    data: {
+        placa: 'KJL2A75',
+        dataEntrada: ontem,
+        dataSaida: ontem,
+        pago: true,
+        valorPago: 20.00,
+        pagamento: {
+            create: { 
+                valorPago: 20.00, 
+                dataPagamento: treDiasAtras 
+            }
+        }
+    }
+  })
+
   // --- CENÁRIO 1.5: pagou hoje - historico
   await prisma.ticket.create({
     data: {
-        placa: 'H0J3123',
+        placa: 'H0J3I23',
         dataEntrada: new Date(Date.now() - 1000 * 60 * 60), // Entrou 1 hora
         dataSaida: new Date(),
         pago: true,
