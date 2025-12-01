@@ -1,7 +1,11 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    swcLoader: false,
+    forceSwcTransforms: false,
+  },
+  swcMinify: false,
 };
 
 export default nextConfig;

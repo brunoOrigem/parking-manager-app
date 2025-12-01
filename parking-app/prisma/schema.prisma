@@ -1,15 +1,27 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+// Banco SQLite
+datasource db {
+  provider = "sqlite"
+  url      = "file:./database.db"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Ticket {
+  id            Int      @id @default(autoincrement())
+  placa         String
+  entrada       DateTime @default(now())
+  saida         DateTime?
+  pago          Boolean  @default(false)
+  valorPago     Float?
+  status        String   @default("ABERTO") // ABERTO | PAGO | FINALIZADO
+
+  pagamento     Pagamento?
+}
+
+model Pagamento {
+  id        Int     @id @default(autoincrement())
+  ticketId  Int     @unique
+  ticket    Ticket  @relation(fields: [ticketId], references: [id])
 }
