@@ -1,27 +1,37 @@
-// Banco SQLite
-datasource db {
-  provider = "sqlite"
-  url      = "file:./database.db"
-}
+// parking-app/prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
 }
 
-model Ticket {
-  id            Int      @id @default(autoincrement())
-  placa         String
-  entrada       DateTime @default(now())
-  saida         DateTime?
-  pago          Boolean  @default(false)
-  valorPago     Float?
-  status        String   @default("ABERTO") // ABERTO | PAGO | FINALIZADO
+// Mantemos o SQLite do seu colega (mais fácil de rodar)
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
 
-  pagamento     Pagamento?
+model Ticket {
+  // Alterado para String/UUID para bater com seu código atual
+  id          String    @id @default(uuid())
+  placa       String
+  
+  // Nomes ajustados para bater com seu TicketService
+  dataEntrada DateTime  @default(now())
+  dataSaida   DateTime?
+  
+  // Campos extras úteis que seu colega criou
+  pago        Boolean   @default(false)
+  valorPago   Float?
+  
+  // Relacionamento
+  pagamento   Pagamento?
 }
 
 model Pagamento {
-  id        Int     @id @default(autoincrement())
-  ticketId  Int     @unique
-  ticket    Ticket  @relation(fields: [ticketId], references: [id])
+  id            String   @id @default(uuid())
+  dataPagamento DateTime @default(now())
+  valorPago     Float
+  
+  ticketId      String   @unique
+  ticket        Ticket   @relation(fields: [ticketId], references: [id])
 }

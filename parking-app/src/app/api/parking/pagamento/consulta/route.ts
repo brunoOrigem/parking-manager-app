@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server';
 import { ticketService } from '@/services/ticket.service';
 
-//endpoint validador do caixa 
-//para pagar o ticket
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { ticketId } = body;
 
-    //solicita o ticket caso o usuario nao informe o id ou a placa
     if (!ticketId) {
       return NextResponse.json({ error: 'Ticket ID obrigatório' }, { status: 400 });
     }
@@ -17,7 +14,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json(calculo, { status: 200 });
 
-  } catch (error) {
-    return NextResponse.json({ error: 'Erro ao calcular' }, { status: 500 });
+  } catch (error: any) {
+    // CORREÇÃO: Retorna a mensagem específica do erro (ex: "Ticket não encontrado")
+    // em vez de uma mensagem genérica.
+    return NextResponse.json(
+        { error: error.message || 'ERRO: ticket nao encontrado.' }, 
+        { status: 500 }
+    );
   }
 }

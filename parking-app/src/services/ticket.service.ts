@@ -1,88 +1,53 @@
-import { randomUUID } from 'crypto';
-
-// Interface para tipar nosso objeto (Domain Model)
-interface Ticket {
-  id: string;
-  placa: string;
-  dataEntrada: Date;
-  dataSaida: Date | null;
-  pagamento: any | null;
-}
+import { ticketRepository } from '@/repositories/ticket.repository';
 
 export class TicketService {
-  //Alterar aqui brunooo , aqui eu fiz esse teste so pra ele deixar o 
-  // as plcas que eu criei... para fazer uns testes
-  private tickets: Ticket[] = [];
-
-  // Emtiindo o ticket
+  
+  // --- 1. Emissão ---
   async emitirTicket(placa: string) {
-    //validacaço para criação de placas no padrao
     const regexPlaca = /^[A-Z]{3}-?\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/i;
-    
-    if (!regexPlaca.test(placa)) {
-      throw new Error("Placa inválida! Use o formato AAA-0000 ou Mercosul.");
-    }
+    if (!regexPlaca.test(placa)) throw new Error("Placa inválida!");
 
-    //verificação de placas, para verificar se ha alguma igual dentro do estacionmento
-    //caso tenha, nao deixa cadastrar.
-    const jaExiste = this.tickets.find(t => t.placa.toUpperCase() === placa.toUpperCase() && t.dataSaida === null);
-    if (jaExiste) {
-        throw new Error("Veículo já está no estacionamento!");
-    }
+    const jaExiste = await ticketRepository.findByPlacaOpen(placa);
+    if (jaExiste) throw new Error("Veículo já está no estacionamento!");
 
-    const novoTicket: Ticket = {
-      id: randomUUID(),
-      placa: placa.toUpperCase(),
-      dataEntrada: new Date(), // entrou agora
-      dataSaida: null,
-      pagamento: null,
-    };
-
-    // salvando o ticket gerado
-    this.tickets.push(novoTicket);
+    const novoTicket = await ticketRepository.create(placa);
     return novoTicket;
   }
 
-  // metodo p auxiliar a busca... para n ser apenas pelo ticket
-  // e tambem pela placa, um jeito mais facil
-  private buscarTicket(termo: string): Ticket {
-    // tentando encontrar id ou placa
-    const ticket = this.tickets.find(t => 
-        t.id === termo || 
-        t.placa === termo.toUpperCase()
-    );
-
-    // caso digitarmos ticket-vencido, ele gera um ticket vencido para 
-    //fazermos a validação em casos de pagamento ou saida bloqueada
-    if (!ticket && termo === 'ticket-vencido') {
-        return {
-            id: 'ticket-vencido',
-            placa: 'TESTE-CARO',
-            dataEntrada: new Date(Date.now() - (1000 * 60 * 130)), // 2h 10m atras
-            dataSaida: null,
-            pagamento: null
-        };
+  // Helper de busca
+  private async buscarTicket(termo: string) {
+    let ticket = null;
+    
+    // Busca por ID ou Placa
+    if (termo.length > 20) {
+       ticket = await ticketRepository.findById(termo);
+    } else {
+       ticket = await ticketRepository.findByPlacaOpen(termo);
     }
 
-    if (!ticket) {
-        throw new Error("Ticket não encontrado.");
-    }
+    // REMOVIDO: A simulação de 'ticket-vencido' foi removida.
+    // Agora usamos apenas dados reais do banco (como os do Seed).
 
+    if (!ticket) throw new Error("Ticket não encontrado.");
+    
     return ticket;
   }
 
-  // --- 2. Validação (Saída) ---
+  // --- 2. Validação Saída ---
   async validarSaida(termoBusca: string) {
-    const ticket = this.buscarTicket(termoBusca);
+    const ticket = await this.buscarTicket(termoBusca);
+
+    if (ticket.dataSaida !== null) {
+        return { liberado: false, mensagem: "Ticket já finalizado.", placa: ticket.placa };
+    }
 
     const agora = new Date();
-    const diferencaMs = agora.getTime() - ticket.dataEntrada.getTime();
+    const diferencaMs = agora.getTime() - new Date(ticket.dataEntrada).getTime();
     const minutosPermanencia = diferencaMs / (1000 * 60);
 
-    // regra dos 15 min de cortesia...
+    // regra dos 15 min de cortesia
     if (minutosPermanencia <= 15) {
-        // caso for cortesia, finaliza o ticket ali msm na hora
-        ticket.dataSaida = new Date(); 
+        await ticketRepository.registrarSaida(ticket.id, true);
         return {
             liberado: true,
             mensagem: `Saída Liberada. Tempo: ${Math.floor(minutosPermanencia)} min (Cortesia).`,
@@ -90,8 +55,8 @@ export class TicketService {
         };
     }
 
-    // caso passou os 15 min, exige o pagamento do ticket
-    if (ticket.pagamento === null) {
+    // verifica pagamento
+    if (!ticket.pago && !ticket.pagamento) {
         return {
             liberado: false,
             mensagem: `Saída Bloqueada. Tempo: ${Math.floor(minutosPermanencia)} min. Pagamento necessário.`,
@@ -99,65 +64,80 @@ export class TicketService {
         };
     }
 
-    // caso está pago, libera a saida
-    ticket.dataSaida = new Date();
+    await ticketRepository.registrarSaida(ticket.id);
     return { liberado: true, mensagem: "Saída Liberada. Volte sempre!", placa: ticket.placa };
   }
 
-  // calculo do valor a se pagar no estacionamento 
+  // --- 3. Cálculo ---
   async calcularValor(termoBusca: string) {
-    const ticket = this.buscarTicket(termoBusca);
+    const ticket = await this.buscarTicket(termoBusca);
 
-    //caso o ticket ta pago, ele avisa...
-    if (ticket.pagamento) {
-        throw new Error("Este ticket já foi pago!");
+    if (ticket.pago || ticket.pagamento) {
+        throw new Error("Ticket já pago!");
     }
 
     const agora = new Date();
-    const diferencaMs = agora.getTime() - ticket.dataEntrada.getTime();
+    const diferencaMs = agora.getTime() - new Date(ticket.dataEntrada).getTime();
     const minutosTotais = Math.floor(diferencaMs / (1000 * 60));
     const horasTotais = Math.ceil(minutosTotais / 60); 
 
     let valor = 0;
-
-    // regras de negocio
-    //para como realizar o calculo... bem legivel
-    if (minutosTotais <= 15) {
-      valor = 0.00;
-    } else if (minutosTotais <= 60) {
-      valor = 5.00;
-    } else {
-      valor = 5.00 + ((horasTotais - 1) * 4.50);
-    }
+    if (minutosTotais <= 15) valor = 0.00;
+    else if (minutosTotais <= 60) valor = 5.00;
+    else valor = 5.00 + ((horasTotais - 1) * 4.50);
 
     return {
       ticketId: ticket.id,
-      placa: ticket.placa, //exibir a placa na tela.
+      placa: ticket.placa,
       tempoPermanenciaMinutos: minutosTotais,
       tempoFormatado: `${Math.floor(minutosTotais / 60)}h ${minutosTotais % 60}m`,
       valorAPagar: valor
     };
   }
 
-  // pagamento.
+  // --- 4. Pagamento ---
   async realizarPagamento(termoBusca: string) {
-    const ticket = this.buscarTicket(termoBusca);
+    const ticket = await this.buscarTicket(termoBusca);
+    
+    // Calcula valor real
     const infoCalculo = await this.calcularValor(termoBusca);
 
-    const pagamentoConfirmado = {
-        id: randomUUID(),
-        ticketId: ticket.id,
-        valorPago: infoCalculo.valorAPagar,
-        dataPagamento: new Date(),
-    };
-
-    // salvando o pagamento do objeto ticket na memoria
-    ticket.pagamento = pagamentoConfirmado;
+    // Salva no Banco de verdade
+    const pagamento = await ticketRepository.registrarPagamento(ticket.id, infoCalculo.valorAPagar);
 
     return {
         sucesso: true,
-        mensagem: "Pagamento confirmado. Ticket liberado para saída.",
-        comprovante: pagamentoConfirmado
+        mensagem: "Pagamento confirmado.",
+        comprovante: pagamento
+    };
+  }
+
+  // --- 5. Relatório ---
+  async obterRelatorio(filtroMes?: number, filtroDia?: number) {
+    const ticketsPagos = await ticketRepository.findAllPagos();
+
+    let filtrados = ticketsPagos;
+    if (filtroMes) {
+        filtrados = filtrados.filter(t => {
+            const dataRef = t.pagamento?.dataPagamento || t.dataSaida || t.dataEntrada;
+            return new Date(dataRef).getMonth() === (filtroMes - 1);
+        });
+    }
+    
+    if (filtroDia) {
+        filtrados = filtrados.filter(t => {
+            const dataRef = t.pagamento?.dataPagamento || t.dataSaida || t.dataEntrada;
+            return new Date(dataRef).getDate() === filtroDia;
+        });
+    }
+
+    const valorTotal = filtrados.reduce((total, t) => total + (t.valorPago || 0), 0);
+
+    return {
+      filtroAplicado: { mes: filtroMes || 'Todos', dia: filtroDia || 'Todos' },
+      totalRecebido: valorTotal,
+      quantidadeTickets: filtrados.length,
+      ultimasPlacas: filtrados.slice(-5).map(t => t.placa)
     };
   }
 }

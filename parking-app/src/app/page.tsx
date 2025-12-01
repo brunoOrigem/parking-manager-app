@@ -57,7 +57,13 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setResultado(`✅ Pagamento:\n${data.mensagem}\nComprovante: R$ ${data.comprovante?.valorPago}`);
+      
+      // formatando o valor pra ficar bonitinho no alerta
+      const valorFormatado = data.comprovante?.valorPago 
+        ? `R$ ${data.comprovante.valorPago.toFixed(2)}` 
+        : 'R$ 0.00';
+
+      setResultado(`✅ Pagamento:\n${data.mensagem}\nComprovante: ${valorFormatado}`);
     } catch (err: any) {
       setResultado(`❌ Erro: ${err.message}`);
     }
@@ -78,6 +84,29 @@ export default function Home() {
       
       const icone = data.liberado ? '🟢' : '🔴';
       setResultado(`${icone} Saída (${data.placa}): ${data.mensagem}`);
+    } catch (err: any) {
+      setResultado(`❌ Erro: ${err.message}`);
+    }
+  }
+
+  // relatorio gerencial (novo botaozao roxo)
+  // aqui a gente bate no endpoint novo pra ver quanto ganhou de dinheiro
+  async function handleRelatorio() {
+    try {
+      setResultado('Gerando relatório...');
+      // nao to passando data pra pegar o geralzao que ta no banco
+      const res = await fetch('/api/parking/gerencial');
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error);
+
+      setResultado(
+        `📊 RELATÓRIO GERAL:\n` +
+        `-------------------\n` +
+        `💰 Faturamento Total: R$ ${data.totalRecebido.toFixed(2)}\n` +
+        `🎫 Tickets Pagos: ${data.quantidadeTickets}\n` +
+        `🚗 Últimas Placas: ${data.ultimasPlacas.join(', ') || 'Nenhuma'}`
+      );
     } catch (err: any) {
       setResultado(`❌ Erro: ${err.message}`);
     }
@@ -116,7 +145,7 @@ export default function Home() {
             <label className="block text-sm font-medium">ID do Ticket ou Placa</label>
             <input
               type="text"
-              placeholder="Cole o ID do ticket ou digite a Placa"
+              placeholder="Cole o ID ou digite a Placa"
               className="w-full p-2 border rounded"
               value={ticketIdCaixa}
               onChange={(e) => setTicketIdCaixa(e.target.value)}
@@ -152,6 +181,16 @@ export default function Home() {
             </button>
           </div>
         </section>
+      </div>
+
+      {/* --- BOTAO DE RELATORIO (NOVO) --- */}
+      <div className="max-w-6xl mx-auto mt-8 text-center">
+        <button
+          onClick={handleRelatorio}
+          className="bg-purple-600 text-white px-8 py-3 rounded shadow-lg hover:bg-purple-700 font-bold flex items-center gap-2 mx-auto transition-transform hover:scale-105"
+        >
+          📊 Gerar Relatório Gerencial
+        </button>
       </div>
 
       {resultado && (
