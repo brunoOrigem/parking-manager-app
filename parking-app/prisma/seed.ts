@@ -8,12 +8,12 @@ async function main() {
   await prisma.pagamento.deleteMany()
   await prisma.ticket.deleteMany()
 
-  // --- CENÁRIO 1: Histórico (Já pagou e saiu) ---
-  // Placa: ANT-1234 (Padrão Antigo - Válido)
+  // ENÁRIO 1: ja pagou e ja saiu
+  // Placa: ANT-1234 C
   await prisma.ticket.create({
     data: {
-        placa: 'ANT1234', // Ou ANT-1234 se a regex aceitar hífen opcional
-        dataEntrada: new Date(Date.now() - 1000 * 60 * 60 * 24), // Ontem
+        placa: 'ANT1234', 
+        dataEntrada: new Date(Date.now() - 1000 * 60 * 60 * 24), //placa que saiu ontem
         dataSaida: new Date(),
         pago: true,
         valorPago: 35.00,
@@ -23,21 +23,21 @@ async function main() {
     }
   })
 
-  // --- CENÁRIO 2: O "Milionário" (Entrou há 2 dias) ---
-  // Placa: RIC0A99 (Padrão Mercosul - Válido)
+  //CENÁRIO 2: entrou a 2 dias e nao saiu
+  //placa JBG8765
   const doisDiasAtras = new Date()
   doisDiasAtras.setDate(doisDiasAtras.getDate() - 2)
   
   await prisma.ticket.create({
     data: {
-        placa: 'RIC0A99', 
+        placa: 'JBG8765', 
         dataEntrada: doisDiasAtras,
         pago: false
     }
   })
 
-  // --- CENÁRIO 3: O "Trabalhador" (Entrou há 8 horas) ---
-  // Placa: TRA8B00 (Padrão Mercosul - Válido)
+  // --- CENÁRIO 3: Entrou ha 8 horas e nao saiu ainda) 
+  // placa: TRA8B00 
   const oitoHorasAtras = new Date()
   oitoHorasAtras.setHours(oitoHorasAtras.getHours() - 8)
 
@@ -49,29 +49,43 @@ async function main() {
     }
   })
 
-  // --- CENÁRIO 4: O "Almoço" (Entrou há 2 horas) ---
-  // Placa: FOM3C23 (Padrão Mercosul - Válido)
+  // --- CENÁRIO 4: entrou a 2 horas e nao saiu
+  // Placa: JJJ1111
   const duasHorasAtras = new Date()
   duasHorasAtras.setHours(duasHorasAtras.getHours() - 2)
 
   await prisma.ticket.create({
     data: {
-        placa: 'FOM3C23',
+        placa: 'JJJ1111',
         dataEntrada: duasHorasAtras,
         pago: false
     }
   })
 
-  // --- CENÁRIO 5: A "Cortesia" (Entrou há 10 minutos) ---
-  // Placa: RAP1D10 (Padrão Mercosul - Válido)
-  const dezMinutosAtras = new Date()
-  dezMinutosAtras.setMinutes(dezMinutosAtras.getMinutes() - 10)
+
+  //CENARIO5: entrou a exatamente 1 hora atras
+  //placa DEF2222
+  const umaHoraAtras = new Date()
+  umaHoraAtras.setHours(umaHoraAtras.getHours() - 1)
 
   await prisma.ticket.create({
     data: {
-        placa: 'RAP1D10',
-        dataEntrada: dezMinutosAtras,
+        placa: 'DEF2222',
+        dataEntrada: umaHoraAtras,
         pago: false
+    }
+  })
+
+  //CENARIO 6 entrou a 30 min atras
+  //placa JAB1512
+   const trintaMin = new Date()
+  trintaMin.setMinutes(trintaMin.getMinutes() - 30) 
+
+  await prisma.ticket.create({
+    data: {
+      placa: 'JAB1512',
+      dataEntrada: trintaMin,
+      pago: false
     }
   })
 
