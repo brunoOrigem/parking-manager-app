@@ -14,10 +14,11 @@ export default function CaixaPage() {
   const [resultado, setResultado] = useState<string | null>(null);
   const [loading, setLoading] = useState<'consulta' | 'pagamento' | null>(null);
 
+  //consulta o status da placa no estacionamento
   async function handleConsulta() {
     try {
-      if (!ticketIdCaixa.trim()) throw new Error('Digite o ID ou a Placa.');
-      setLoading('consulta');
+      if (!ticketIdCaixa.trim()) throw new Error("Digite o ID ou a Placa.");
+      
       setResultado('Consultando...');
       const res = await fetch('/api/parking/pagamento/consulta', {
         method: 'POST',
@@ -25,20 +26,17 @@ export default function CaixaPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setResultado(
-        `💰 Consulta (${data.placa}):\nTempo: ${data.tempoFormatado}\nValor: R$ ${data.valorAPagar}`,
-      );
-    } catch (err: unknown) {
-      setResultado(`❌ Erro: ${getErrorMessage(err)}`);
-    } finally {
-      setLoading(null);
+      
+      setResultado(`💰 Consulta (${data.placa}):\nID: ${data.ticketId}\nTempo: ${data.tempoFormatado}\nValor: R$ ${data.valorAPagar}`);
+    } catch (err: any) {
+      setResultado(`❌ Erro: ${err.message}`);
     }
   }
 
   async function handlePagamento() {
     try {
-      if (!ticketIdCaixa.trim()) throw new Error('Digite o ID ou a Placa.');
-      setLoading('pagamento');
+      if (!ticketIdCaixa.trim()) throw new Error("Digite o ID ou a Placa.");
+
       setResultado('Pagando...');
       const res = await fetch('/api/parking/pagamento/confirmar', {
         method: 'POST',
@@ -46,13 +44,16 @@ export default function CaixaPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setResultado(
-        `✅ Pagamento efetuado:\n${data.mensagem}\nComprovante: R$ ${data.comprovante?.valorPago}`,
-      );
-    } catch (err: unknown) {
-      setResultado(`❌ Erro: ${getErrorMessage(err)}`);
-    } finally {
-      setLoading(null);
+      
+      // formatando o valor pra ficar bonitinho no alerta
+      const valorFormatado = data.comprovante?.valorPago 
+        ? `R$ ${data.comprovante.valorPago.toFixed(2)}` 
+        : 'R$ 0.00';
+      const ticketIdComprovante = data.comprovante?.ticketId || 'N/A';
+
+      setResultado(`✅ Pagamento efetuado:\n${data.mensagem}\nComprovante: ${valorFormatado}\nTicket ID: ${ticketIdComprovante}`);
+    } catch (err: any) {
+      setResultado(`❌ Erro: ${err.message}`);
     }
   }
 
@@ -104,14 +105,6 @@ export default function CaixaPage() {
                 {loading === 'pagamento' ? 'Processando...' : 'Pagar'}
               </button>
             </div>
-
-            <p className="mt-3 rounded-lg border border-dashed border-slate-700/80 bg-slate-950/80 px-3 py-2 text-[11px] text-slate-300/80">
-              💡 <span className="font-semibold">Dica:</span> use{' '}
-              <code className="rounded bg-slate-800/90 px-1 py-0.5 text-[11px] text-amber-200">
-                ticket-vencido
-              </code>{' '}
-              para testar um valor de R$ 14,00.
-            </p>
           </div>
 
           {resultado && (

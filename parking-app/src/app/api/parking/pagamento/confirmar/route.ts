@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { ticketService } from '@/services/ticket.service';
 
+
+//caixa - pagamento da placa
 export async function POST(request: Request) {
   try {
     const body = await request.json();

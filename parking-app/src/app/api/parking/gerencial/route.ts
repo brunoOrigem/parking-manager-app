@@ -3,17 +3,17 @@ import { ticketService } from '@/services/ticket.service';
 
 export async function GET(request: Request) {
   try {
-    // Pega os parâmetros da URL (ex: .../gerencial?mes=11&dia=25)
+    //pega os parametros da url
     const { searchParams } = new URL(request.url);
     
     const mes = searchParams.get('mes'); // string ou null
     const dia = searchParams.get('dia'); // string ou null
 
-    // Converte para número se existir (para filtrar)
+    // coverte p numero se necessario
     const filtroMes = mes ? parseInt(mes) : undefined;
     const filtroDia = dia ? parseInt(dia) : undefined;
 
-    // Chama o serviço que busca no banco
+    //chama o servico p buscar no banco
     const relatorio = await ticketService.obterRelatorio(filtroMes, filtroDia);
     
     return NextResponse.json(relatorio);

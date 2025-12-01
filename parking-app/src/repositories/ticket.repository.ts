@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 
 export class TicketRepository {
   
-  // Salva um novo ticket
+  // salva um novo ticket
   async create(placa: string) {
     return await prisma.ticket.create({
       data: {
@@ -12,7 +12,7 @@ export class TicketRepository {
     });
   }
 
-  // Busca por ID
+  // busca o tikcet pelo id
   async findById(id: string) {
     return await prisma.ticket.findUnique({
       where: { id: id },
@@ -20,7 +20,7 @@ export class TicketRepository {
     });
   }
 
-  // Busca por Placa (Apenas carros que ainda não saíram)
+  // busca o ticket pela placa
   async findByPlacaOpen(placa: string) {
     return await prisma.ticket.findFirst({
       where: { 
@@ -31,7 +31,7 @@ export class TicketRepository {
     });
   }
 
-  // Salva o pagamento e atualiza o ticket
+  // salva o pagamento e atualiza o ticket
   async registrarPagamento(ticketId: string, valor: number) {
     return await prisma.$transaction(async (tx) => {
       const novoPagamento = await tx.pagamento.create({
@@ -54,20 +54,19 @@ export class TicketRepository {
     });
   }
 
-  // Finaliza (Registra saída)
-  // CORREÇÃO: Agora aceita o parametro 'isCortesia' para marcar como pago R$ 0,00
+  // registrando a saida
   async registrarSaida(id: string, isCortesia: boolean = false) {
     return await prisma.ticket.update({
       where: { id: id },
       data: { 
         dataSaida: new Date(),
-        // Se for cortesia, marca como pago e valor 0 para aparecer no relatório
+        // caso seja cortesia, marca como pago e add valor 0 no relatorio
         ...(isCortesia && { pago: true, valorPago: 0.0 })
       }
     });
   }
 
-  // --- NECESSÁRIO PARA O RELATÓRIO ---
+  // Encontrar tickets pagos
   async findAllPagos() {
     return await prisma.ticket.findMany({
       where: { pago: true },

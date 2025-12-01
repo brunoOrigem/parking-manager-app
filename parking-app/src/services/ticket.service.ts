@@ -2,7 +2,7 @@ import { ticketRepository } from '@/repositories/ticket.repository';
 
 export class TicketService {
   
-  // --- 1. Emissão ---
+  //EMISSAO TICKET CARRO NOVO
   async emitirTicket(placa: string) {
     const regexPlaca = /^[A-Z]{3}-?\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/i;
     if (!regexPlaca.test(placa)) throw new Error("Placa inválida!");
@@ -14,26 +14,23 @@ export class TicketService {
     return novoTicket;
   }
 
-  // Helper de busca
+  // buscar o tikcer
   private async buscarTicket(termo: string) {
     let ticket = null;
     
-    // Busca por ID ou Placa
+    // id ou placa podem ser os parametros
     if (termo.length > 20) {
        ticket = await ticketRepository.findById(termo);
     } else {
        ticket = await ticketRepository.findByPlacaOpen(termo);
     }
 
-    // REMOVIDO: A simulação de 'ticket-vencido' foi removida.
-    // Agora usamos apenas dados reais do banco (como os do Seed).
-
     if (!ticket) throw new Error("Ticket não encontrado.");
     
     return ticket;
   }
 
-  // --- 2. Validação Saída ---
+  //VALIDAR SAIDA
   async validarSaida(termoBusca: string) {
     const ticket = await this.buscarTicket(termoBusca);
 
@@ -68,7 +65,7 @@ export class TicketService {
     return { liberado: true, mensagem: "Saída Liberada. Volte sempre!", placa: ticket.placa };
   }
 
-  // --- 3. Cálculo ---
+  // CALUCLO VALOR PAGAMENTO
   async calcularValor(termoBusca: string) {
     const ticket = await this.buscarTicket(termoBusca);
 
@@ -95,14 +92,14 @@ export class TicketService {
     };
   }
 
-  // --- 4. Pagamento ---
+  //PAGAMENTO
   async realizarPagamento(termoBusca: string) {
     const ticket = await this.buscarTicket(termoBusca);
     
-    // Calcula valor real
+    //calcula o valor do estacionemtno
     const infoCalculo = await this.calcularValor(termoBusca);
 
-    // Salva no Banco de verdade
+    // salva o valor no banco
     const pagamento = await ticketRepository.registrarPagamento(ticket.id, infoCalculo.valorAPagar);
 
     return {
@@ -112,7 +109,7 @@ export class TicketService {
     };
   }
 
-  // --- 5. Relatório ---
+  // RELATORIO
   async obterRelatorio(filtroMes?: number, filtroDia?: number) {
     const ticketsPagos = await ticketRepository.findAllPagos();
 
