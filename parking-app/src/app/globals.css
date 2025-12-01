@@ -1,8 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* aqui eh contigo otavio, sei nadaaaa disso kkkkkkkkkkkkkkkkk
-so coloquei essa corzinha pra n ficar branco na hora do teste q fiz aq */
+
+/* Estilos globais simples, sem @apply */
+html,
 body {
-  background-color: #718dc6;
+  min-height: 100vh;
+  background-color: #020617; /* slate-950 */
+  color: #e5e7eb;            /* slate-200 */
+}
+
+/* Fundo com gradiente radial azul */
+body {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.15), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.1), transparent 55%),
+    #020617;
+}
+
+/* Scrollbar mais discreta (Chrome/Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background-color: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #1f2937; /* slate-800 */
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #4b5563; /* slate-600 */
+}
+
+/* Efeito de clique para botões com a classe .btn */
+.btn {
+  transition: transform 150ms ease-out;
+}
+.btn:active {
+  transform: scale(0.98);
 }

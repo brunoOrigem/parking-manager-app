@@ -1,169 +1,87 @@
-'use client'; 
+'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 
 export default function Home() {
-  const [placa, setPlaca] = useState('');
-  const [ticketIdCaixa, setTicketIdCaixa] = useState('');
-  const [ticketIdSaida, setTicketIdSaida] = useState('');
-  const [resultado, setResultado] = useState<string | null>(null);
-
-  // entrada
-  async function handleEntrada() {
-    try {
-      // validaçao no front p nn chamar a api desnecessariamente
-      if (!placa.trim()) throw new Error("Por favor, digite a placa do veículo.");
-
-      setResultado('Processando...');
-      const res = await fetch('/api/parking/ticket/entrada', {
-        method: 'POST',
-        body: JSON.stringify({ placa: placa }), 
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setResultado(`🎟️ Ticket Gerado: \nID: ${data.id}\nPlaca: ${data.placa}`);
-    } catch (err: any) {
-      setResultado(`❌ Erro: ${err.message}`);
-    }
-  }
-
-  // consultar o preço do estacionamento
-  async function handleConsulta() {
-    try {
-      if (!ticketIdCaixa.trim()) throw new Error("Digite o ID ou a Placa.");
-      
-      setResultado('Consultando...');
-      const res = await fetch('/api/parking/pagamento/consulta', {
-        method: 'POST',
-        body: JSON.stringify({ ticketId: ticketIdCaixa }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setResultado(`💰 Consulta (${data.placa}):\nTempo: ${data.tempoFormatado}\nValor: R$ ${data.valorAPagar}`);
-    } catch (err: any) {
-      setResultado(`❌ Erro: ${err.message}`);
-    }
-  }
-
-  // Pagar o estacionamento
-  async function handlePagamento() {
-    try {
-      if (!ticketIdCaixa.trim()) throw new Error("Digite o ID ou a Placa.");
-
-      setResultado('Pagando...');
-      const res = await fetch('/api/parking/pagamento/confirmar', {
-        method: 'POST',
-        body: JSON.stringify({ ticketId: ticketIdCaixa }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setResultado(`✅ Pagamento:\n${data.mensagem}\nComprovante: R$ ${data.comprovante?.valorPago}`);
-    } catch (err: any) {
-      setResultado(`❌ Erro: ${err.message}`);
-    }
-  }
-
-  // Validar a saida
-  async function handleSaida() {
-    try {
-      if (!ticketIdSaida.trim()) throw new Error("Digite o ID ou a Placa.");
-
-      setResultado('Validando...');
-      const res = await fetch('/api/parking/ticket/saida', {
-        method: 'POST',
-        body: JSON.stringify({ ticketId: ticketIdSaida }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      
-      const icone = data.liberado ? '🟢' : '🔴';
-      setResultado(`${icone} Saída (${data.placa}): ${data.mensagem}`);
-    } catch (err: any) {
-      setResultado(`❌ Erro: ${err.message}`);
-    }
-  }
-
   return (
-    <main className="min-h-screen p-8 bg-gray-100 text-gray-800 font-sans">
-      <h1 className="text-3xl font-bold text-center mb-10 text-blue-800">
-        🅿️ Sistema de Estacionamento
-      </h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        
-        {/* ENTRADA */}
-        <section className="bg-white p-6 rounded shadow-md border-t-4 border-green-500">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">🚗 Entrada</h2>
-          <div className="space-y-3">
-            <label className="block text-sm font-medium">Placa do Veículo</label>
-            <input
-              type="text"
-              placeholder="Ex: ABC-1234"
-              className="w-full p-2 border rounded uppercase" // uppercase ajuda visualmente
-              value={placa}
-              onChange={(e) => setPlaca(e.target.value)}
-            />
-            <button onClick={handleEntrada} className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 font-bold transition-colors">
-              Emitir Ticket
-            </button>
+    <main className="min-h-screen flex flex-col">
+      {/* HEADER CENTRALIZADO */}
+      <header className="border-b border-sky-900/40 bg-gradient-to-r from-sky-900/90 via-slate-900/90 to-sky-950/90 backdrop-blur-md shadow-lg shadow-sky-900/40">
+        <div className="max-w-5xl mx-auto px-4 py-8 text-center space-y-3">
+          <div className="flex justify-center">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500 text-3xl shadow-lg shadow-sky-500/60">
+              🅿️
+            </span>
           </div>
-        </section>
-
-        {/* CAIXA */}
-        <section className="bg-white p-6 rounded shadow-md border-t-4 border-yellow-500">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">💸 Caixa</h2>
-          <div className="space-y-3">
-            <label className="block text-sm font-medium">ID do Ticket ou Placa</label>
-            <input
-              type="text"
-              placeholder="Cole o ID do ticket ou digite a Placa"
-              className="w-full p-2 border rounded"
-              value={ticketIdCaixa}
-              onChange={(e) => setTicketIdCaixa(e.target.value)}
-            />
-            <div className="flex gap-2">
-              <button onClick={handleConsulta} className="flex-1 bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 font-bold transition-colors">
-                Consultar
-              </button>
-              <button onClick={handlePagamento} className="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-bold transition-colors">
-                Pagar
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-2 bg-gray-50 p-2 rounded border">
-              💡 <strong>Dica:</strong> Use <code>ticket-vencido</code> para teste de R$ 14,00.
-            </p>
-          </div>
-        </section>
-
-        {/* SAÍDA */}
-        <section className="bg-white p-6 rounded shadow-md border-t-4 border-red-500">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">🚧 Saída</h2>
-          <div className="space-y-3">
-            <label className="block text-sm font-medium">ID do Ticket ou Placa</label>
-            <input
-              type="text"
-              placeholder="Cole o ID ou digite a Placa"
-              className="w-full p-2 border rounded"
-              value={ticketIdSaida}
-              onChange={(e) => setTicketIdSaida(e.target.value)}
-            />
-            <button onClick={handleSaida} className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700 font-bold transition-colors">
-              Validar Saída
-            </button>
-          </div>
-        </section>
-      </div>
-
-      {resultado && (
-        <div className="mt-8 max-w-2xl mx-auto bg-gray-800 text-green-400 p-6 rounded shadow-lg font-mono whitespace-pre-line border border-gray-600">
-          <div className="flex justify-between items-start">
-            <strong>RESPOSTA DO SISTEMA:</strong>
-            <button onClick={() => setResultado(null)} className="text-xs text-gray-400 hover:text-white">[Limpar]</button>
-          </div>
-          <hr className="border-gray-600 my-2"/>
-          {resultado}
+          <h1 className="text-3xl md:text-4xl font-semibold text-slate-50 tracking-tight">
+            Sistema de Estacionamento
+          </h1>
+          <p className="text-sm md:text-base text-slate-200/90 max-w-2xl mx-auto">
+            Trabalho Final · Programação de Software Aplicado
+          </p>
+          <p className="text-xs md:text-sm text-slate-300/80">
+            Escolha abaixo qual área deseja acessar para operar o estacionamento.
+          </p>
         </div>
-      )}
+      </header>
+
+      {/* CARDS DE NAVEGAÇÃO */}
+      <section className="flex-1">
+        <div className="max-w-5xl mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* ENTRADA */}
+            <Link
+              href="/entrada"
+              className="group relative flex flex-col items-center justify-center rounded-2xl bg-slate-900/90 border border-sky-700/40 py-10 px-6 text-center shadow-xl shadow-sky-900/40 hover:border-sky-400 hover:bg-slate-900/95 transition-colors cursor-pointer"
+            >
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-sky-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" />
+              <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-500/15 text-3xl text-sky-300 mb-4">
+                🚗
+              </span>
+              <h2 className="relative text-lg font-semibold text-slate-50 tracking-wide mb-2">
+                Entrada
+              </h2>
+              <p className="relative text-xs md:text-sm text-slate-300/90 max-w-xs">
+                Emitir novo ticket de estacionamento no momento em que o veículo entra.
+              </p>
+            </Link>
+
+            {/* CAIXA */}
+            <Link
+              href="/caixa"
+              className="group relative flex flex-col items-center justify-center rounded-2xl bg-slate-900/90 border border-amber-500/40 py-10 px-6 text-center shadow-xl shadow-amber-900/40 hover:border-amber-300 hover:bg-slate-900/95 transition-colors cursor-pointer"
+            >
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400/12 via-transparent to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" />
+              <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-400/15 text-3xl text-amber-200 mb-4">
+                💸
+              </span>
+              <h2 className="relative text-lg font-semibold text-slate-50 tracking-wide mb-2">
+                Caixa
+              </h2>
+              <p className="relative text-xs md:text-sm text-slate-300/90 max-w-xs">
+                Consultar tempo, calcular valor a pagar e registrar o pagamento do ticket.
+              </p>
+            </Link>
+
+            {/* SAÍDA */}
+            <Link
+              href="/saida"
+              className="group relative flex flex-col items-center justify-center rounded-2xl bg-slate-900/90 border border-rose-500/40 py-10 px-6 text-center shadow-xl shadow-rose-900/40 hover:border-rose-300 hover:bg-slate-900/95 transition-colors cursor-pointer"
+            >
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-400/14 via-transparent to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" />
+              <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-400/15 text-3xl text-rose-200 mb-4">
+                🚧
+              </span>
+              <h2 className="relative text-lg font-semibold text-slate-50 tracking-wide mb-2">
+                Saída
+              </h2>
+              <p className="relative text-xs md:text-sm text-slate-300/90 max-w-xs">
+                Validar o ticket na cancela de saída e liberar a passagem do veículo.
+              </p>
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
