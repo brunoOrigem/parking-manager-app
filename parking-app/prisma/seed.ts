@@ -8,26 +8,50 @@ async function main() {
   await prisma.pagamento.deleteMany()
   await prisma.ticket.deleteMany()
 
-  // ENÁRIO 1: ja pagou e ja saiu
-  // Placa: ANT-1234 C
+  // Datas auxiliares
+  const agora = new Date()
+  
+  const ontem = new Date(agora)
+  ontem.setDate(ontem.getDate() - 1) // Data de Ontem
+
+  const doisDiasAtras = new Date(agora)
+  doisDiasAtras.setDate(doisDiasAtras.getDate() - 2)
+
+  // --- CENÁRIO 1: pagou ontem - historico
   await prisma.ticket.create({
     data: {
-        placa: 'ANT1234', 
-        dataEntrada: new Date(Date.now() - 1000 * 60 * 60 * 24), //placa que saiu ontem
-        dataSaida: new Date(),
+        placa: 'ANT1234',
+        dataEntrada: ontem,
+        dataSaida: ontem,
         pago: true,
         valorPago: 35.00,
         pagamento: {
-            create: { valorPago: 35.00, dataPagamento: new Date() }
+            create: { 
+                valorPago: 35.00, 
+                dataPagamento: ontem 
+            }
         }
     }
   })
 
-  //CENÁRIO 2: entrou a 2 dias e nao saiu
-  //placa JBG8765
-  const doisDiasAtras = new Date()
-  doisDiasAtras.setDate(doisDiasAtras.getDate() - 2)
-  
+  // --- CENÁRIO 1.5: pagou hoje - historico
+  await prisma.ticket.create({
+    data: {
+        placa: 'H0J3123',
+        dataEntrada: new Date(Date.now() - 1000 * 60 * 60), // Entrou 1 hora
+        dataSaida: new Date(),
+        pago: true,
+        valorPago: 5.00,
+        pagamento: {
+            create: { 
+                valorPago: 5.00, 
+                dataPagamento: new Date() 
+            }
+        }
+    }
+  })
+
+  // --- CENÁRIO 2: entrou a 2 dias e nao pagou
   await prisma.ticket.create({
     data: {
         placa: 'JBG8765', 
@@ -36,9 +60,8 @@ async function main() {
     }
   })
 
-  // --- CENÁRIO 3: Entrou ha 8 horas e nao saiu ainda) 
-  // placa: TRA8B00 
-  const oitoHorasAtras = new Date()
+  // --- CENÁRIO 3: entrou a 8 horas
+  const oitoHorasAtras = new Date(agora)
   oitoHorasAtras.setHours(oitoHorasAtras.getHours() - 8)
 
   await prisma.ticket.create({
@@ -49,37 +72,33 @@ async function main() {
     }
   })
 
-  // --- CENÁRIO 4: entrou a 2 horas e nao saiu
-  // Placa: JJJ1111
-  const duasHorasAtras = new Date()
+  // --- CENÁRIO 4: entrou a 2 horas
+  const duasHorasAtras = new Date(agora)
   duasHorasAtras.setHours(duasHorasAtras.getHours() - 2)
 
   await prisma.ticket.create({
     data: {
-        placa: 'JJJ1111',
+        placa: 'AAA8888',
         dataEntrada: duasHorasAtras,
         pago: false
     }
   })
 
-
-  //CENARIO5: entrou a exatamente 1 hora atras
-  //placa DEF2222
-  const umaHoraAtras = new Date()
+  // --- CENÁRIO 5: EXATAMENTE 1 HORA ATRÁS ---
+  const umaHoraAtras = new Date(agora)
   umaHoraAtras.setHours(umaHoraAtras.getHours() - 1)
 
   await prisma.ticket.create({
     data: {
-        placa: 'DEF2222',
+        placa: 'RAP1D10',
         dataEntrada: umaHoraAtras,
         pago: false
     }
   })
 
-  //CENARIO 6 entrou a 30 min atras
-  //placa JAB1512
-   const trintaMin = new Date()
-  trintaMin.setMinutes(trintaMin.getMinutes() - 30) 
+  // --- CENÁRIO 6: EXATAMENTE 30 MINUTOS ATRÁS ---
+  const trintaMin = new Date(agora)
+  trintaMin.setMinutes(trintaMin.getMinutes() - 30)
 
   await prisma.ticket.create({
     data: {
@@ -89,7 +108,7 @@ async function main() {
     }
   })
 
-  console.log('🏁 Seed finalizado! Novos carros com placas válidas inseridos.')
+  console.log('🏁 Seed finalizado! Dados corrigidos para teste de datas.')
 }
 
 main()
