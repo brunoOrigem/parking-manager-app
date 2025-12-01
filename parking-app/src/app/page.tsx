@@ -4,74 +4,70 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col bg-[#050511] text-slate-300 font-sans">
-      
-      {/* HEADER */}
-      <div className="py-12 text-center space-y-4">
-        <div className="flex justify-center mb-4">
-          <span className="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded font-bold">P</span>
-        </div>
-        <h1 className="text-4xl font-bold text-white tracking-tight">
+    <main className="min-h-screen bg-[#f5f7fb]">
+      <section className="max-w-6xl mx-auto px-4 pt-10 pb-6 text-center">
+        <h1 className="text-3xl md:text-[2.4rem] font-semibold text-[#15407b] tracking-tight">
           Sistema de Estacionamento
         </h1>
-        <p className="text-sm text-slate-400">
+
+        <p className="mt-3 text-sm md:text-base text-[#555]">
           Trabalho Final · Programação de Software Aplicado
         </p>
-        <p className="text-sm text-slate-400">
-          Escolha abaixo qual área deseja acessar para operar o estacionamento.
+
+        <p className="mt-4 text-base md:text-lg text-[#555]">
+          Escolha abaixo qual área deseja acessar para operar o estacionamento:
         </p>
-      </div>
+      </section>
 
-      {/* LISTA DE OPÇÕES */}
-      <div className="w-full max-w-4xl mx-auto flex flex-col">
-        
-        {/* OPÇÃO 1: ENTRADA */}
-        <div className="border-t border-indigo-900/50 py-12 flex flex-col items-center text-center space-y-4 hover:bg-white/5 transition-colors">
-          <span className="text-3xl">🚗</span>
-          <Link href="/entrada" className="text-3xl font-bold text-indigo-500 hover:text-indigo-400 underline decoration-2 underline-offset-8 transition-all">
-            Entrada
+      <section className="max-w-6xl mx-auto px-4 pb-16">
+        <div className="flex justify-center gap-8 flex-wrap md:flex-nowrap">
+          <Link href="/entrada">
+            <div className="w-[230px] h-[230px] md:w-[260px] md:h-[240px] bg-white rounded-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center text-center cursor-pointer transition-transform duration-150 hover:-translate-y-1">
+              <div className="mb-4 text-[3.2rem] text-[#0060df]">
+                🚗
+              </div>
+              <span className="text-sm md:text-base font-semibold tracking-wide text-[#0050b3] uppercase">
+                Entrada
+              </span>
+            </div>
           </Link>
-          <p className="text-indigo-200/60 max-w-md">
-            Emitir novo ticket de estacionamento no momento em que o veículo entra.
-          </p>
-        </div>
 
-        {/* OPÇÃO 2: CAIXA */}
-        <div className="border-t border-indigo-900/50 py-12 flex flex-col items-center text-center space-y-4 hover:bg-white/5 transition-colors">
-          <span className="text-3xl">💸</span>
-          <Link href="/caixa" className="text-3xl font-bold text-indigo-500 hover:text-indigo-400 underline decoration-2 underline-offset-8 transition-all">
-            Caixa
+          <Link href="/caixa">
+            <div className="w-[230px] h-[230px] md:w-[260px] md:h-[240px] bg-white rounded-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center text-center cursor-pointer transition-transform duration-150 hover:-translate-y-1">
+              <div className="mb-4 text-[3.2rem] text-[#0060df]">
+                💸
+              </div>
+              <span className="text-sm md:text-base font-semibold tracking-wide text-[#0050b3] uppercase">
+                Caixa
+              </span>
+            </div>
           </Link>
-          <p className="text-indigo-200/60 max-w-md">
-            Consultar tempo, calcular valor a pagar e registrar o pagamento do ticket.
-          </p>
-        </div>
 
-        {/* OPÇÃO 3: SAÍDA */}
-        <div className="border-t border-indigo-900/50 py-12 flex flex-col items-center text-center space-y-4 hover:bg-white/5 transition-colors">
-          <span className="text-3xl">🚧</span>
-          <Link href="/saida" className="text-3xl font-bold text-indigo-500 hover:text-indigo-400 underline decoration-2 underline-offset-8 transition-all">
-            Saída
+          <Link href="/saida">
+            <div className="w-[230px] h-[230px] md:w-[260px] md:h-[240px] bg-white rounded-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center text-center cursor-pointer transition-transform duration-150 hover:-translate-y-1">
+              <div className="mb-4 text-[3.2rem] text-[#0060df]">
+                🚧
+              </div>
+              <span className="text-sm md:text-base font-semibold tracking-wide text-[#0050b3] uppercase">
+                Saída
+              </span>
+            </div>
           </Link>
-          <p className="text-indigo-200/60 max-w-md">
-            Validar o ticket na cancela de saída e liberar a passagem do veículo.
-          </p>
-        </div>
 
-        {/* OPÇÃO 4: RELATÓRIO (NOVO) */}
-        <div className="border-t border-indigo-900/50 border-b py-12 flex flex-col items-center text-center space-y-4 hover:bg-white/5 transition-colors">
-          <span className="text-3xl">📊</span>
-          <Link href="/relatorio" className="text-3xl font-bold text-indigo-500 hover:text-indigo-400 underline decoration-2 underline-offset-8 transition-all">
-            Relatório Gerencial
+          <Link href="/relatorio">
+            <div className="w-[230px] h-[230px] md:w-[260px] md:h-[240px] bg-white rounded-md shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex flex-col items-center justify-center text-center cursor-pointer transition-transform duration-150 hover:-translate-y-1">
+              <div className="mb-4 text-[3.2rem] text-[#0060df]">
+                📊
+              </div>
+              <span className="text-sm md:text-base font-semibold tracking-wide text-[#0050b3] uppercase">
+                Relatório
+              </span>
+            </div>
           </Link>
-          <p className="text-indigo-200/60 max-w-md">
-            Visualizar faturamento total, quantidade de tickets e histórico recente.
-          </p>
         </div>
+      </section>
 
-      </div>
-      
-      <footer className="py-8 text-center text-slate-600 text-xs">
+      <footer className="py-8 text-center text-slate-500 text-xs">
         Sistema de Estacionamento v1.0
       </footer>
     </main>
